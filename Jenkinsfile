@@ -11,12 +11,6 @@ pipeline{
                     checkout scm
                 }
             }
-            
-            stage('Build'){
-                steps{
-                    bat "python -m pip install --upgrade pip && pip install -r requirements.txt"
-                }
-            }
 
             stage('Build the docker image'){
                 steps{
