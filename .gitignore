@@ -1,0 +1,71 @@
+# ── Python ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pyc
+
+# ── Virtual Environments ─────────────────────────────────────
+.env
+.venv/
+venv/
+env/
+ENV/
+.Python
+
+# ── Distribution / Packaging ─────────────────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+.eggs/
+
+# ── Flask / App specific ─────────────────────────────────────
+instance/
+.webassets-cache
+*.log
+
+# ── Testing ──────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# ── IDE & Editor ─────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Docker ───────────────────────────────────────────────────
+*.tar
+docker-compose.override.yml
+
+# ── Azure / Deployment ───────────────────────────────────────
+deployment.zip
+.azure/
+*.pubxml
+*.PublishSettings
+
+# ── Secrets & Environment Variables ─────────────────────────
+# .env is excluded to prevent credentials being committed
+.env
+.env.*
+!.env.example
+
+# ── OS Generated ─────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

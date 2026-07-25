@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Appointment Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #080d1a;
+      --surface:   rgba(255,255,255,0.04);
+      --border:    rgba(255,255,255,0.08);
+      --shadow:    0 8px 32px rgba(0,0,0,0.45);
+      --primary:   #7c6dfa;
+      --primary-g: rgba(124,109,250,0.35);
+      --success:   #34d399;
+      --success-g: rgba(52,211,153,0.35);
+      --warning:   #fbbf24;
+      --warning-g: rgba(251,191,36,0.35);
+      --danger:    #f87171;
+      --danger-g:  rgba(248,113,113,0.35);
+      --t1:        #f1f5f9;
+      --t2:        #94a3b8;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--t1);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 4%;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(8,13,26,0.85);
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg,#7c6dfa,#c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header-right { display: flex; gap: 1rem; align-items: center; }
+
+    .db-badge {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .4rem .9rem;
+      border-radius: 50px;
+      font-size: .82rem;
+      font-weight: 600;
+      border: 1px solid;
+    }
+    .db-badge .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .badge-ok  { border-color: var(--success); color: var(--success); }
+    .badge-ok  .dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .badge-err { border-color: var(--danger);  color: var(--danger);  }
+    .badge-err .dot { background: var(--danger);  box-shadow: 0 0 6px var(--danger);  }
+    .badge-warn{ border-color: var(--warning); color: var(--warning); }
+    .badge-warn .dot{ background: var(--warning); box-shadow: 0 0 6px var(--warning); }
+
+    .btn-book {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .5rem 1.25rem;
+      background: linear-gradient(135deg,#7c6dfa,#a855f7);
+      color: #fff;
+      border: none; border-radius: 8px;
+      font-size: .9rem; font-weight: 600;
+      cursor: pointer; text-decoration: none;
+      transition: all .25s;
+      box-shadow: 0 4px 12px rgba(124,109,250,.3);
+    }
+    .btn-book:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+    /* ── MAIN ── */
+    main { padding: 2.5rem 4%; max-width: 1400px; margin: 0 auto; }
+
+    /* ── STATS CARDS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem 1.75rem;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transition: transform .25s;
+    }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      opacity: .12;
+    }
+    .stat-card.total   ::before { background: var(--primary);  }
+    .stat-card.pending ::before { background: var(--warning); }
+    .stat-card.confirmed::before{ background: var(--success); }
+    .stat-card.cancelled::before{ background: var(--danger);  }
+    .stat-label { font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--t2); margin-bottom: .5rem; }
+    .stat-value { font-size: 2.4rem; font-weight: 700; }
+    .stat-card.total    .stat-value { color: var(--primary); }
+    .stat-card.pending  .stat-value { color: var(--warning); }
+    .stat-card.confirmed .stat-value{ color: var(--success); }
+    .stat-card.cancelled .stat-value{ color: var(--danger);  }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .filter-bar form { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+    .filter-label { font-size: .82rem; color: var(--t2); font-weight: 600; }
+    select, input[type="date"] {
+      background: rgba(0,0,0,.35);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--t1);
+      padding: .45rem .85rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: .88rem;
+      cursor: pointer;
+      outline: none;
+      transition: border-color .2s;
+    }
+    select:focus, input[type="date"]:focus { border-color: var(--primary); }
+    .btn-filter {
+      padding: .45rem 1rem;
+      background: rgba(124,109,250,.15);
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      color: var(--primary);
+      font-size: .88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-filter:hover { background: rgba(124,109,250,.3); }
+    .btn-reset {
+      padding: .45rem 1rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--t2);
+      font-size: .88rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .btn-reset:hover { border-color: var(--t2); color: var(--t1); }
+
+    /* ── TABLE ── */
+    .table-wrapper {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+    }
+    .table-header {
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .table-count { font-size: .85rem; color: var(--t2); font-weight: 400; }
+    .tbl-scroll { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead th {
+      padding: .85rem 1.2rem;
+      text-align: left;
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--t2);
+      background: rgba(0,0,0,.15);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .2s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,.025); }
+    td {
+      padding: .9rem 1.2rem;
+      font-size: .9rem;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .patient-info .name { font-weight: 600; }
+    .patient-info .email { font-size: .78rem; color: var(--t2); margin-top: .15rem; }
+    .patient-info .phone { font-size: .78rem; color: var(--t2); }
+
+    .status-badge {
+      display: inline-block;
+      padding: .22rem .75rem;
+      border-radius: 50px;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+    .s-pending   { background: rgba(251,191,36,.12);  color: var(--warning); border: 1px solid var(--warning-g); }
+    .s-confirmed { background: rgba(52,211,153,.12);  color: var(--success); border: 1px solid var(--success-g); }
+    .s-cancelled { background: rgba(248,113,113,.12); color: var(--danger);  border: 1px solid var(--danger-g);  }
+
+    .action-btns { display: flex; gap: .5rem; }
+    .btn-confirm-sm, .btn-cancel-sm {
+      padding: .3rem .75rem;
+      border-radius: 6px;
+      font-size: .78rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-confirm-sm {
+      background: rgba(52,211,153,.15);
+      color: var(--success);
+      border: 1px solid rgba(52,211,153,.3);
+    }
+    .btn-confirm-sm:hover { background: rgba(52,211,153,.3); }
+    .btn-cancel-sm {
+      background: rgba(248,113,113,.12);
+      color: var(--danger);
+      border: 1px solid rgba(248,113,113,.3);
+    }
+    .btn-cancel-sm:hover { background: rgba(248,113,113,.3); }
+
+    .empty-row td {
+      text-align: center;
+      padding: 4rem;
+      color: var(--t2);
+      font-style: italic;
+    }
+
+    /* ── ERROR BANNER ── */
+    .error-banner {
+      background: rgba(248,113,113,.08);
+      border: 1px solid rgba(248,113,113,.4);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      color: #fca5a5;
+      font-size: .88rem;
+      line-height: 1.5;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: .82rem;
+      color: var(--t2);
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+
+    @media (max-width: 640px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">📅 AppoBook</div>
+    <div class="header-right">
+      {% if connection_status == 'Connected' %}
+        <div class="db-badge badge-ok"><span class="dot"></span>Azure SQL: Connected</div>
+      {% elif connection_status in ['Missing ODBC Driver', 'Query Error'] %}
+        <div class="db-badge badge-err"><span class="dot"></span>{{ connection_status }}</div>
+      {% else %}
+        <div class="db-badge badge-warn"><span class="dot"></span>{{ connection_status }}</div>
+      {% endif %}
+      <a href="{{ url_for('book') }}" class="btn-book">+ New Appointment</a>
+    </div>
+  </header>
+
+  <main>
+
+    {% if error_message %}
+    <div class="error-banner">⚠️ <strong>{{ connection_status }}:</strong> {{ error_message }}</div>
+    {% endif %}
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-label">Total</div>
+        <div class="stat-value">{{ stats.total }}</div>
+      </div>
+      <div class="stat-card pending">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value">{{ stats.pending }}</div>
+      </div>
+      <div class="stat-card confirmed">
+        <div class="stat-label">Confirmed</div>
+        <div class="stat-value">{{ stats.confirmed }}</div>
+      </div>
+      <div class="stat-card cancelled">
+        <div class="stat-label">Cancelled</div>
+        <div class="stat-value">{{ stats.cancelled }}</div>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filter-bar">
+      <form method="GET" action="{{ url_for('index') }}">
+        <span class="filter-label">Filter by:</span>
+        <select name="status">
+          {% for s in ['All', 'Pending', 'Confirmed', 'Cancelled'] %}
+            <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+        <input type="date" name="date" value="{{ date_filter }}" />
+        <button type="submit" class="btn-filter">Apply</button>
+        <a href="{{ url_for('index') }}" class="btn-reset">Clear</a>
+      </form>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrapper">
+      <div class="table-header">
+        <span>Appointments</span>
+        <span class="table-count">{{ appointments|length }} record(s)</span>
+      </div>
+      <div class="tbl-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Patient</th>
+              <th>Service</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Duration</th>
+              <th>Status</th>
+              <th>Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in appointments %}
+            <tr>
+              <td>{{ a.id }}</td>
+              <td>
+                <div class="patient-info">
+                  <div class="name">{{ a.patient_name }}</div>
+                  <div class="email">{{ a.patient_email }}</div>
+                  {% if a.patient_phone %}<div class="phone">{{ a.patient_phone }}</div>{% endif %}
+                </div>
+              </td>
+              <td>{{ a.service_name or '—' }}</td>
+              <td>{{ a.appointment_date.strftime('%d %b %Y') if a.appointment_date else '—' }}</td>
+              <td>{{ a.appointment_time.strftime('%I:%M %p') if a.appointment_time and a.appointment_time.__class__.__name__ != 'str' else a.appointment_time or '—' }}</td>
+              <td>{{ a.duration_mins }} min</td>
+              <td>
+                {% if a.status == 'Pending' %}
+                  <span class="status-badge s-pending">Pending</span>
+                {% elif a.status == 'Confirmed' %}
+                  <span class="status-badge s-confirmed">Confirmed</span>
+                {% else %}
+                  <span class="status-badge s-cancelled">Cancelled</span>
+                {% endif %}
+              </td>
+              <td style="max-width:160px; white-space:normal; font-size:.82rem; color:var(--t2);">
+                {{ a.notes or '—' }}
+              </td>
+              <td>
+                {% if a.status != 'Cancelled' %}
+                <div class="action-btns">
+                  {% if a.status == 'Pending' %}
+                  <form action="{{ url_for('confirm', appt_id=a.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn-confirm-sm">✓ Confirm</button>
+                  </form>
+                  {% endif %}
+                  <form action="{{ url_for('cancel', appt_id=a.id) }}" method="POST" style="display:inline;"
+                        onsubmit="return confirm('Cancel this appointment?');">
+                    <button type="submit" class="btn-cancel-sm">✕ Cancel</button>
+                  </form>
+                </div>
+                {% else %}
+                  <span style="color:var(--t2); font-size:.8rem;">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr class="empty-row">
+              <td colspan="9">
+                {% if connection_status == 'Connected' %}
+                  No appointments found. <a href="{{ url_for('book') }}" style="color:var(--primary);">Book one now!</a>
+                {% else %}
+                  Connect to a database to view appointments.
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    AppoBook &bull; Appointment Booking System &bull; Azure SQL &amp; Flask
+  </footer>
+
+</body>
+</html>
